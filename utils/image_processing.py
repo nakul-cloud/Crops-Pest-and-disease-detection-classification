@@ -47,6 +47,48 @@ def upscale(image):
     return cv2.resize(image, None, fx=1.5, fy=1.5, interpolation=cv2.INTER_CUBIC)
 
 
+# Leaf Segmentation
+def segment_leaf(image):
+    """
+    Segments the leaf region using HSV color space.
+    Removes background by detecting green colors using morphological operations.
+    
+    Parameters:
+    image: BGR image (numpy array)
+    
+    Returns:
+    Segmented image with background removed, or original if segmentation fails
+    """
+    try:
+        # Convert BGR to HSV color space
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        
+        # Define green color range in HSV
+        lower_green = np.array([25, 40, 40])
+        upper_green = np.array([90, 255, 255])
+        
+        # Create mask for green regions
+        mask = cv2.inRange(hsv, lower_green, upper_green)
+        
+        # Optional improvement: Skip segmentation if mask is too small
+        if np.sum(mask) < 1000:
+            return image
+        
+        # Apply morphological closing to clean noise and fill gaps
+        kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (5, 5))
+        mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+        
+        # Apply mask to original image using bitwise AND
+        segmented = cv2.bitwise_and(image, image, mask=mask)
+        
+        return segmented
+    
+    except Exception as e:
+        # Fallback: return original image if segmentation fails
+        print(f"Leaf segmentation failed: {e}")
+        return image
+
+
 # FINAL PIPELINE
 def process_drone_image(image_path):
     img = cv2.imread(image_path)
@@ -55,6 +97,7 @@ def process_drone_image(image_path):
     img = denoise(img)
     img = apply_clahe(img)
     img = sharpen(img)
+    img = segment_leaf(img)
     img = extract_roi(img)
 
     return img
