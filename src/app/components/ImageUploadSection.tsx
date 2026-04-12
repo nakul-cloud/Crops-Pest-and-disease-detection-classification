@@ -13,7 +13,7 @@ const modes = [
 
 export function ImageUploadSection() {
   const { selectedMode, setSelectedMode, previewUrl, setPreviewUrl,
-          fileRef, isLoading, error, analyze } = useAnalysis();
+          fileRef, isLoading, error, analyze, detections } = useAnalysis();
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleFile = (file: File) => {
@@ -40,6 +40,15 @@ export function ImageUploadSection() {
     fileRef.current = null;
     if (inputRef.current) inputRef.current.value = "";
   };
+
+  // Helper function to match detection colors
+  function pickColor(label: string, index: number) {
+    const lower = label.toLowerCase();
+    if (lower.includes("pest") || lower.includes("aphid") || lower.includes("mite")) return "#fbbf24";
+    if (lower.includes("healthy")) return "#22c55e";
+    const palette = ["#ef4444", "#f59e0b", "#3b82f6", "#8b5cf6", "#06b6d4", "#ec4899"];
+    return palette[index % palette.length];
+  }
 
   return (
     <div
@@ -97,22 +106,47 @@ export function ImageUploadSection() {
         onDragOver={handleDragOver}
         onDrop={handleDrop}
         onClick={!previewUrl ? handleSelectClick : undefined}
-        className="relative border-2 border-dashed rounded-2xl p-8 transition-all duration-300 cursor-pointer"
+        className="relative border-2 border-dashed rounded-2xl p-8 transition-all duration-300 cursor-pointer overflow-hidden group"
         style={{
           borderColor: "rgba(255,255,255,0.12)",
           background: "rgba(255,255,255,0.02)",
+          padding: previewUrl ? "0" : "2rem",
         }}
       >
         {previewUrl ? (
-          <div className="relative">
+          <div className="relative w-full h-[400px]">
             <img
               src={previewUrl}
               alt="Preview"
-              className="w-full h-64 object-cover rounded-xl"
+              className="w-full h-full object-contain"
             />
+            {/* Draw bounding boxes directly over the uploaded image */}
+            {detections && detections.length > 0 && (
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1 1" preserveAspectRatio="none">
+                {detections.map((det: any, idx: number) => {
+                  const refWidth = 640; 
+                  const [x1, y1, x2, y2] = det.box;
+                  const x = x1 / refWidth;
+                  const y = y1 / refWidth;
+                  const w = (x2 - x1) / refWidth;
+                  const h = (y2 - y1) / refWidth;
+                  const color = pickColor(det.label, idx);
+                  return (
+                    <g key={idx} className="opacity-100 transition-opacity">
+                      <rect x={x} y={y} width={w} height={h} fill="none" stroke={color} strokeWidth="0.004" rx="0.005" />
+                      <rect x={x} y={Math.max(0, y - 0.04)} width={w} height="0.04" fill={color} opacity="0.85" rx="0.005" />
+                      <text x={x + 0.005} y={Math.max(0.04, y - 0.01)} fill="white" fontSize="0.025" fontWeight="600">
+                        {det.label} {Math.round(det.confidence * 100)}%
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            )}
+            
             <button
               onClick={(e) => { e.stopPropagation(); handleClear(); }}
-              className="absolute top-2 right-2 p-2 rounded-full bg-red-500/80 hover:bg-red-500 text-white transition-colors"
+              className="absolute top-4 right-4 p-2 rounded-full bg-red-500/80 hover:bg-red-500 text-white transition-colors z-10"
             >
               <X className="w-4 h-4" />
             </button>

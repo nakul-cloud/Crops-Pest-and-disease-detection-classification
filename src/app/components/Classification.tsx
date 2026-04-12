@@ -9,7 +9,7 @@ import { ClassificationResultBanner } from "./ClassificationResultBanner";
 const classStats = [
   { label: "Total Classes", value: "15", trend: "Active", icon: Grid3x3 },
   { label: "Model Type", value: "AlexNet", trend: "CNN", icon: Layers },
-  { label: "Accuracy", value: "96.8%", trend: "mAP", icon: ScanLine },
+  { label: "Accuracy", value: "82.9%", trend: "", icon: ScanLine },
 ];
 
 const exampleClassifications = [
@@ -149,16 +149,15 @@ export function Classification() {
 
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <ImageUploadSection />
+          {/* 🔥 FINAL RESULT BANNER — appears below upload area after analysis */}
+          <ClassificationResultBanner />
         </div>
 
         {/* Classification Results */}
         <ClassificationResultsPanel />
       </div>
-
-      {/* 🔥 FINAL RESULT BANNER — appears below upload area after analysis */}
-      <ClassificationResultBanner />
 
       {/* Class Distribution */}
       <div className="rounded-2xl bg-card border border-white/10 p-6 backdrop-blur-sm">

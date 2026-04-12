@@ -70,57 +70,8 @@ export function DetectionOutput() {
         </div>
       </div>
 
-      {/* Image with Bounding Boxes */}
-      <div className="relative rounded-xl overflow-hidden mb-5 group" style={{ background: "#050d18" }}>
-        {previewUrl ? (
-          <img
-            src={previewUrl}
-            alt="Crop Analysis"
-            className="w-full h-80 object-cover opacity-90"
-          />
-        ) : (
-          <div className="w-full h-80 flex items-center justify-center text-muted-foreground text-sm">
-            No image uploaded yet
-          </div>
-        )}
+      {/* Image with Bounding Boxes has been moved to ImageUploadSection */}
 
-        {/* Bounding Boxes Overlay — rendered as %, so works at any image resolution */}
-        {previewUrl && detections.length > 0 && (
-          <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 1 1" preserveAspectRatio="none">
-            {detections.map((det, idx) => {
-              // det.box = [x1, y1, x2, y2] in pixels; we need to relative-size them.
-              // We don't know original img dims here so we use a 640×640 reference (YOLO default).
-              const ref = 640;
-              const [x1, y1, x2, y2] = det.box;
-              const x = x1 / ref;
-              const y = y1 / ref;
-              const w = (x2 - x1) / ref;
-              const h = (y2 - y1) / ref;
-              const color = pickColor(det.label, idx);
-              return (
-                <g
-                  key={idx}
-                  className={`transition-opacity ${selectedIdx === idx || selectedIdx === null ? "opacity-100" : "opacity-30"}`}
-                >
-                  <rect x={x} y={y} width={w} height={h} fill="none" stroke={color} strokeWidth="0.004" rx="0.005" />
-                  <rect x={x} y={Math.max(0, y - 0.04)} width={w} height="0.04" fill={color} opacity="0.85" rx="0.005" />
-                  <text x={x + 0.005} y={Math.max(0.04, y - 0.01)} fill="white" fontSize="0.025" fontWeight="600">
-                    {det.label} {Math.round(det.confidence * 100)}%
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
-        )}
-
-        {/* Hover Overlay */}
-        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-          <Button size="sm" className="bg-white text-black hover:bg-white/90 text-xs">
-            <Eye className="w-3.5 h-3.5 mr-1.5" />
-            View Full Size
-          </Button>
-        </div>
-      </div>
 
       {/* Classification Result (classification mode) */}
       {classification && selectedMode === "classification" && (

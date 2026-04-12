@@ -1,6 +1,6 @@
 import os
 import json
-from groq import Groq
+from groq import Groq 
 
 def generate_insights(detections, classification):
     """
